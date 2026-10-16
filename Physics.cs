@@ -1,9 +1,12 @@
 ﻿using System.Numerics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Ball2D
 {
     public static class Physics
     {
+
+        public static float Restitution = 1.0f;
         public static void ResolveScreenBounds(Ball ball, int screenWidth, int screenHeight)
         {
 
@@ -60,7 +63,7 @@ namespace Ball2D
                 float velAlongNormal = CustomVector2.Dot(relativeVelocity, normal);
 
                 //коэффициент упругости
-                float restitution = 1.0f;
+                float restitution = Restitution;
 
                 float m1 = b1.Radius;
                 float m2 = b2.Radius;
@@ -69,6 +72,43 @@ namespace Ball2D
 
                 b1.Velocity -= normal * (impulseMagnitude / m1);
                 b2.Velocity += normal * (impulseMagnitude / m2);
+            }
+        }
+
+        public static void ResolveStickCollision(Ball ball, Line line)
+        {
+            CustomVector2 ab = line.End - line.Start;       //вектор палки
+            CustomVector2 ap = ball.Position - line.Start;  //вектор от центра шара до начала палки
+
+            float abLenSq = ab.LengthSquared();
+            if (abLenSq == 0) return;
+
+
+            float t = CustomVector2.Dot(ap, ab) / abLenSq;
+            if (t < 0.0f) t = 0.0f;
+            if (t > 1.0f) t = 1.0f;
+
+            CustomVector2 closesPoint = line.Start + ab * t; //точные координаты проекции шара
+
+            CustomVector2 delta = ball.Position - closesPoint;
+            float distance = delta.Length();
+
+            if (distance < ball.Radius)
+            {
+                CustomVector2 normal = delta / distance; //направление отскока от палки
+
+                float penetration = ball.Radius - distance;
+                ball.Position += normal * penetration;
+
+                float velAlongNormal = CustomVector2.Dot(ball.Velocity, normal);
+
+                if (velAlongNormal < 0)
+                {
+                    float restitution = Restitution;
+
+                    ball.Velocity -= normal * ((1 + restitution) * velAlongNormal);
+                }
+
             }
         }
     }
