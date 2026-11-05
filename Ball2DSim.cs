@@ -2,8 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ball2D
 {
@@ -12,8 +10,8 @@ namespace Ball2D
         private GraphicsDeviceManager _graphics;
         private SpriteBatch? _spriteBatch;
         private Texture2D? _pixel;
-        private List<Ball> _balls = new List<Ball>();
-        private List<Line> _lines = new List<Line>();
+
+        private Simulation _simulation;
 
         public Ball2DSim()
         {
@@ -23,28 +21,8 @@ namespace Ball2D
 
             _graphics.PreferredBackBufferWidth = 800;
             _graphics.PreferredBackBufferHeight = 500;
-        }
 
-        protected override void Initialize()
-        {
-            int screenWidth = _graphics.PreferredBackBufferWidth;
-            int screenHeight = _graphics.PreferredBackBufferHeight;
-
-            Random rand = new Random();
-            for (int i = 0; i < 20; i++)
-            {
-                _balls.Add(new Ball(
-                    position: new CustomVector2(rand.Next(100, screenWidth - 100), rand.Next(100, screenHeight - 100)),
-                    velocity: new CustomVector2(rand.Next(-250, 250), rand.Next(-250, 250)),
-                    radius: rand.Next(15, 30)
-                ));
-
-                _lines.Add(new Line(new CustomVector2(200, 400), new CustomVector2(600, 250)));
-                _lines.Add(new Line(new CustomVector2(150, 100), new CustomVector2(150, 300)));
-
-            }
-
-            base.Initialize();
+            _simulation = new Simulation();
         }
 
         protected override void LoadContent()
@@ -57,33 +35,12 @@ namespace Ball2D
 
         protected override void Update(GameTime gameTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            foreach (var ball in _balls)
-            {
-                ball.Update(dt);
-                Physics.ResolveScreenBounds(ball, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-
-                foreach (var line in _lines)
-                {
-                    Physics.ResolveStickCollision(ball, line);
-                }
-            }
-
-            for (int i = 0; i < _balls.Count; i++)
-            {
-                for (int j = i + 1; j < _balls.Count; j++)
-                {
-                    Physics.ResolveBallCollision(_balls[i], _balls[j]);
-                }
-            }
-
             base.Update(gameTime);
-        }
 
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _simulation.Update(deltaTime);
+        }
 
         protected override void Draw(GameTime gameTime)
         {
@@ -91,12 +48,12 @@ namespace Ball2D
 
             _spriteBatch!.Begin();
 
-            foreach (var line in _lines)
+            foreach (var line in _simulation.Lines)
             {
                 DrawLine(_spriteBatch!, line.Start, line.End, Color.Black, 4f);
             }
 
-            foreach (var ball in _balls)
+            foreach (var ball in _simulation.Balls)
             {
                 DrawCircle(_spriteBatch!, ball.Position, ball.Radius, Color.Black, 3f);
             }
