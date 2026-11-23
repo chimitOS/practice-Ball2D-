@@ -212,6 +212,8 @@ namespace billiards_wpf_
 
             _simulation.CueBall.Velocity = _shotDirection * _shotPower;
 
+            ShotPowerBar.Value = 0;
+
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -229,6 +231,7 @@ namespace billiards_wpf_
             {
                 double elapsed = now - _chargeStartTime;
                 _shotPower = (float)Math.Min(MaxShotPower, elapsed / ChargeDuration * MaxShotPower);
+                ShotPowerBar.Value = _shotPower;
             }
 
             float deltaTime = (float)Math.Min(
