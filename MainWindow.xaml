@@ -1,0 +1,53 @@
+<Window x:Class="billiards_wpf_.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ball2D — WPF"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="CanMinimize">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width = "800"/>
+
+            <ColumnDefinition Width = "250"/>
+        </Grid.ColumnDefinitions>
+        
+        <Canvas Grid.Column = "0"
+                x:Name="WorldCanvas"
+                Width="800"
+                Height="500"
+                Background="#FFF5F5F5"
+                ClipToBounds="True"
+                MouseMove="WorldCanvas_MouseMove"
+        />
+
+        <StackPanel Grid.Column = "1">
+
+            <Slider x:Name ="FrictionSlider"
+                    Minimum ="0"
+                    Maximum = "300"
+                    Value = "100">
+            </Slider>
+
+            <TextBlock Text="{
+                Binding ElementName=FrictionSlider,
+                Path =Value,
+                StringFormat= F0
+                }"/>
+
+            <Slider x:Name = "RestitutionSlider"
+                    Minimum = "0"
+                    Maximum ="1"
+                    Value = "1">
+            </Slider>
+
+            <TextBlock Text="{
+                Binding ElementName=RestitutionSlider, 
+                Path=Value,
+                StringFormat= F2
+                }"/>
+
+        </StackPanel>
+    </Grid>
+</Window>
