@@ -1,15 +1,12 @@
 using Ball2D;
-using billiards_wpf_.Physics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
 namespace billiards_wpf_
@@ -148,6 +145,37 @@ namespace billiards_wpf_
             _aimLine.Y2 = endPoint.Y;
 
             _aimLine.Visibility = Visibility.Visible;
+        }
+
+        private void WorldCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!_simulation.AreAllBallsStopped())
+            {
+                return;
+            }
+
+            if (!_ballVisuals.ContainsKey(_simulation.CueBall))
+            {
+                return;
+            }
+
+            Point clickPosition = e.GetPosition(WorldCanvas);
+
+            CustomVector2 clickVector = new CustomVector2(
+                (float)clickPosition.X,
+                (float)clickPosition.Y
+            );
+
+            CustomVector2 direction = (clickVector - _simulation.CueBall.Position).Normalized();
+
+            if (direction.LengthSquared() < 0.00000001f)
+            {
+                return;
+            }
+
+            _simulation.CueBall.Velocity = direction * 500f;
+
+            _aimLine.Visibility = Visibility.Collapsed;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
