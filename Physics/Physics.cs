@@ -1,12 +1,9 @@
 ﻿using System.Numerics;
-using System.Runtime.Intrinsics.X86;
 
 namespace Ball2D
 {
     public static class Physics
     {
-
-        public static float Restitution = 1.0f;
         public static void ResolveScreenBounds(Ball ball, int screenWidth, int screenHeight)
         {
 
@@ -38,7 +35,7 @@ namespace Ball2D
                 ball.Velocity.Y = -ball.Velocity.Y;
             }
         }
-        public static void ResolveBallCollision(Ball b1, Ball b2)
+        public static void ResolveBallCollision(Ball b1, Ball b2, float restitution)
         {
             CustomVector2 delta = b2.Position - b1.Position; //вектор смещения между центрами
             float distance = delta.Length();                 //длина вектора в пикселях
@@ -62,25 +59,22 @@ namespace Ball2D
                 //скорость сближения
                 float velAlongNormal = CustomVector2.Dot(relativeVelocity, normal);
 
-                //коэффициент упругости
-                float restitution = Restitution;
+                if (velAlongNormal < 0)
+                {
+                    float impulseMagnitude = -(1 + restitution) * velAlongNormal / (1 / b1.mass + 1 / b2.mass);
 
-                float m1 = b1.Radius;
-                float m2 = b2.Radius;
-
-                float impulseMagnitude = -(1 + restitution) * velAlongNormal / (1 / m1 + 1 / m2);
-
-                b1.Velocity -= normal * (impulseMagnitude / m1);
-                b2.Velocity += normal * (impulseMagnitude / m2);
+                    b1.Velocity -= normal * (impulseMagnitude / b1.mass);
+                    b2.Velocity += normal * (impulseMagnitude / b2.mass);
+                }
             }
         }
 
-        public static void ResolveStickCollision(Ball ball, Line line)
+        public static void ResolveStickCollision(Ball ball, Line line, float restitution)
         {
             CustomVector2 ab = line.End - line.Start;       //вектор палки
             CustomVector2 ap = ball.Position - line.Start;  //вектор от центра шара до начала палки
 
-            float abLenSq = ab.LengthSquared();
+            float abLenSq = ab.LengthSquared(); 
             if (abLenSq == 0) return;
 
 
@@ -104,8 +98,6 @@ namespace Ball2D
 
                 if (velAlongNormal < 0)
                 {
-                    float restitution = Restitution;
-
                     ball.Velocity -= normal * ((1 + restitution) * velAlongNormal);
                 }
 

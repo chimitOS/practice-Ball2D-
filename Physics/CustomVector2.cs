@@ -1,4 +1,6 @@
-﻿namespace Ball2D
+﻿using System;
+
+namespace Ball2D
 {
     public struct CustomVector2
     {
@@ -20,9 +22,13 @@
         public static CustomVector2 operator /(CustomVector2 a, float scalar) => new CustomVector2(a.X / scalar, a.Y / scalar);
 
         public static float Dot(CustomVector2 a, CustomVector2 b) => (a.X * b.X) + (a.Y * b.Y);
-
         public static CustomVector2 Zero => new CustomVector2(0f, 0f);
 
-        public Microsoft.Xna.Framework.Vector2 ToXna() => new Microsoft.Xna.Framework.Vector2(X, Y);
+        public CustomVector2 Normalized()
+        {
+            float len = Length();
+            if (len < 0.0001f) return Zero;
+            return new CustomVector2(X / len, Y / len);
+        }
     }
 }
