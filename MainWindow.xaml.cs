@@ -20,6 +20,13 @@ namespace billiards_wpf_
         private System.Windows.Shapes.Line _aimLine;
         private double _previousFrameTime;
 
+        private bool _isCharging = false; //показывает, удерживает ли игрок кнопку для накопления силы удара
+        private double _chargeStartTime; //момент, когда игрок начал удерживать кнопку
+        private float _shotPower; //текущая сила удара
+        private const float MaxShotPower = 1000f;
+        private const float ChargeDuration = 2f;
+        private CustomVector2 _shotDirection;
+
         private void FrictionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             _simulation.Settings.Friction = (float)e.NewValue;
@@ -122,6 +129,11 @@ namespace billiards_wpf_
 
         private void WorldCanvas_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_isCharging)
+            {
+                return;
+            }
+
             if (!_simulation.AreAllBallsStopped())
             {
                 return;
@@ -149,6 +161,11 @@ namespace billiards_wpf_
 
         private void WorldCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isCharging)
+            {
+                return;
+            }
+
             if (!_simulation.AreAllBallsStopped())
             {
                 return;
@@ -173,9 +190,28 @@ namespace billiards_wpf_
                 return;
             }
 
-            _simulation.CueBall.Velocity = direction * 500f;
+            _shotDirection = direction;
+
+            _isCharging = true;
+
+            _chargeStartTime = _stopwatch.Elapsed.TotalSeconds;
+            _shotPower = 0;
+            WorldCanvas.CaptureMouse();
 
             _aimLine.Visibility = Visibility.Collapsed;
+        }
+
+        private void WorldCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isCharging)
+            {
+                return;
+            }
+
+            _isCharging = false;
+
+            _simulation.CueBall.Velocity = _shotDirection * _shotPower;
+
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -188,6 +224,12 @@ namespace billiards_wpf_
         private void OnRendering(object sender, EventArgs e)
         {
             double now = _stopwatch.Elapsed.TotalSeconds;
+
+            if (_isCharging)
+            {
+                double elapsed = now - _chargeStartTime;
+                _shotPower = (float)Math.Min(MaxShotPower, elapsed / ChargeDuration * MaxShotPower);
+            }
 
             float deltaTime = (float)Math.Min(
                 Math.Max(now - _previousFrameTime, 0.0),

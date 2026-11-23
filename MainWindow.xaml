@@ -21,6 +21,7 @@
                 ClipToBounds="True"
                 MouseMove="WorldCanvas_MouseMove"
                 MouseLeftButtonDown="WorldCanvas_MouseLeftButtonDown"
+                MouseLeftButtonUp="WorldCanvas_MouseLeftButtonUp"
         />
 
         <StackPanel Grid.Column = "1">
