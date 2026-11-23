@@ -20,6 +20,7 @@
                 Background="#FFF5F5F5"
                 ClipToBounds="True"
                 MouseMove="WorldCanvas_MouseMove"
+                MouseLeftButtonDown="WorldCanvas_MouseLeftButtonDown"
         />
 
         <StackPanel Grid.Column = "1">
